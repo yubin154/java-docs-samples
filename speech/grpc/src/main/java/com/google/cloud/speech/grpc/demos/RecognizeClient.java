@@ -26,13 +26,9 @@
 package com.google.cloud.speech.grpc.demos;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.speech.v1.AudioRequest;
-import com.google.cloud.speech.v1.InitialRecognizeRequest;
-import com.google.cloud.speech.v1.InitialRecognizeRequest.AudioEncoding;
 import com.google.cloud.speech.v1.RecognizeRequest;
 import com.google.cloud.speech.v1.RecognizeResponse;
 import com.google.cloud.speech.v1.SpeechGrpc;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.TextFormat;
 
 import io.grpc.ManagedChannel;
@@ -80,6 +76,25 @@ public class RecognizeClient {
   private static final List<String> OAUTH2_SCOPES =
       Arrays.asList("https://www.googleapis.com/auth/cloud-platform");
 
+  private class ResponseObserver extends StreamObserver<RecognizeResponse> {
+    @Override
+    public void onNext(RecognizeResponse response) {
+      logger.info("Received response: " +  TextFormat.printToString(response));
+    }
+
+    @Override
+    public void onError(Throwable error) {
+      Status status = Status.fromThrowable(error);
+      logger.log(Level.WARNING, "recognize failed: {0}", status);
+      finishLatch.countDown();
+    }
+
+    @Override
+    public void onCompleted() {
+      logger.info("recognize completed.");
+      finishLatch.countDown();
+    }
+  }
   /**
    * Construct client connecting to Cloud Speech server at {@code host:port}.
    */
@@ -105,60 +120,21 @@ public class RecognizeClient {
 
   /** Send streaming recognize requests to server. */
   public void recognize() throws InterruptedException, IOException {
+    // Control object to stop threads when needed
     final CountDownLatch finishLatch = new CountDownLatch(1);
-    StreamObserver<RecognizeResponse> responseObserver = new StreamObserver<RecognizeResponse>() {
-      @Override
-      public void onNext(RecognizeResponse response) {
-        logger.info("Received response: " +  TextFormat.printToString(response));
-      }
 
-      @Override
-      public void onError(Throwable error) {
-        Status status = Status.fromThrowable(error);
-        logger.log(Level.WARNING, "recognize failed: {0}", status);
-        finishLatch.countDown();
-      }
-
-      @Override
-      public void onCompleted() {
-        logger.info("recognize completed.");
-        finishLatch.countDown();
-      }
-    };
-
+    StreamObserver<RecognizeResponse> responseObserver = new ResponseObserver();
     StreamObserver<RecognizeRequest> requestObserver = stub.recognize(responseObserver);
     try {
-      // Build and send a RecognizeRequest containing the parameters for processing the audio.
-      InitialRecognizeRequest initial = InitialRecognizeRequest.newBuilder()
-          .setEncoding(AudioEncoding.LINEAR16)
-          .setSampleRate(samplingRate)
-          .setInterimResults(true)
-          .build();
-      RecognizeRequest firstRequest = RecognizeRequest.newBuilder()
-          .setInitialRequest(initial)
-          .build();
-      requestObserver.onNext(firstRequest);
-
       // Open audio file. Read and send sequential buffers of audio as additional RecognizeRequests.
-      FileInputStream in = new FileInputStream(new File(file));
-      // For LINEAR16 at 16000 Hz sample rate, 3200 bytes corresponds to 100 milliseconds of audio.
-      byte[] buffer = new byte[3200];
-      int bytesRead;
-      int totalBytes = 0;
-      while ((bytesRead = in.read(buffer)) != -1) {
-        totalBytes += bytesRead;
-        AudioRequest audio = AudioRequest.newBuilder()
-            .setContent(ByteString.copyFrom(buffer, 0, bytesRead))
-            .build();
-        RecognizeRequest request = RecognizeRequest.newBuilder()
-            .setAudioRequest(audio)
-            .build();
+      InputStream inputStream = new FileInputStream(new File(file));
+      RequestIterator requests = new RequestIterator(inputStream, samplingRate);
+      for (RecognizeRequest request : requests) {
         requestObserver.onNext(request);
         // To simulate real-time audio, sleep after sending each audio buffer.
         // For 16000 Hz sample rate, sleep 100 milliseconds.
         Thread.sleep(samplingRate / 160);
       }
-      logger.info("Sent " + totalBytes + " bytes from audio file: " + file);
     } catch (RuntimeException e) {
       // Cancel RPC.
       requestObserver.onError(e);
