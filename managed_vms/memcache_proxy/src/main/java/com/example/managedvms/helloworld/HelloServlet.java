@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 // [START example]
-@WebServlet(name = "helloworld", value = "")
+@WebServlet(name = "helloworld", value = "/hello")
 @SuppressWarnings("serial")
 public class HelloServlet extends HttpServlet {
 
