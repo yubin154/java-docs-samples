@@ -44,6 +44,12 @@
       com.google.cloud.cache.apps.loadtest.QpsLoadTestServlet
     </servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>qpsLoadTestSync</servlet-name>
+    <servlet-class>
+      com.google.cloud.cache.apps.loadtest.QpsLoadTestSyncServlet
+    </servlet-class>
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>delete</servlet-name>
@@ -76,6 +82,10 @@
   <servlet-mapping>
     <servlet-name>qpsLoadTest</servlet-name>
     <url-pattern>/qpsloadtest</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>qpsLoadTestSync</servlet-name>
+    <url-pattern>/qpsloadtestsync</url-pattern>
   </servlet-mapping>
 
 </web-app>
