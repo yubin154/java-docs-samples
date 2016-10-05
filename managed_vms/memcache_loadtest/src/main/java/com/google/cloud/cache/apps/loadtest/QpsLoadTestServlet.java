@@ -42,10 +42,11 @@ public final class QpsLoadTestServlet extends HttpServlet {
                     @Override
                     public void run() {
                       int duration = durationSec;
-                      long start = System.currentTimeMillis();
+                      List<Future> futures = new ArrayList<>();
                       try {
                         do {
-                          List<Future> futures = new ArrayList<>();
+                          futures.clear();
+                          long start = System.currentTimeMillis();
                           for (int i = 0; i < iterationCount; ++i) {
                             futures.add(memcache.get(key));
                             ExecutionTracker.getInstance().incrementQps();
