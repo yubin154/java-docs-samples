@@ -24,14 +24,16 @@ public final class QpsLoadTestServlet extends HttpServlet {
     final ResponseWriter writer = ResponseWriter.create(response);
     final AsyncMemcacheService memcache = MemcacheServiceFactory.getAsyncMemcacheService();
 
-    final String key = UUID.randomUUID().toString();
     Range<Integer> valueSizeRange = reader.readValueSizeRange();
-    final Object value = MemcacheValues.random(valueSizeRange);
     final int iterationCount = reader.readIterationCount();
     final int durationSec = reader.readDurationSec();
     int frontendQps = reader.readFrontendQps();
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < frontendQps; ++i) {
+      final String key = UUID.randomUUID().toString();
+      final Object value = MemcacheValues.random(valueSizeRange);
+      memcache.put(key, value);
+      ExecutionTracker.getInstance().incrementQps();
       futures.add(
           ExecutionTracker.getInstance()
               .getExecutorService()
@@ -43,18 +45,19 @@ public final class QpsLoadTestServlet extends HttpServlet {
                       long start = System.currentTimeMillis();
                       try {
                         do {
-                          memcache.put(key, value);
-                          ExecutionTracker.getInstance().incrementQps();
+                          List<Future> futures = new ArrayList<>();
                           for (int i = 0; i < iterationCount; ++i) {
-                            Object value = memcache.get(key);
-                            if (value == null) {
+                            futures.add(memcache.get(key));
+                            ExecutionTracker.getInstance().incrementQps();
+                          }
+                          for (Future future : futures) {
+                            if (future.get() == null) {
                               ExecutionTracker.getInstance().incrementErrorCount();
                             }
-                            ExecutionTracker.getInstance().incrementQps();
                           }
                           if (duration > 0) {
                             // sleep till 1 second
-                            Thread.sleep(1000 - (System.currentTimeMillis() - start));
+                            Thread.sleep(Math.max(1, 1000 - (System.currentTimeMillis() - start)));
                           }
                         } while (duration-- >= 0);
                       } catch (Throwable t) {
@@ -64,11 +67,16 @@ public final class QpsLoadTestServlet extends HttpServlet {
                   }));
     }
     for (int i = 0; i <= durationSec; ++i) {
+      try {
+        Thread.sleep(1000);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       writer.write(
-          String.format("memcache QPS %s", ExecutionTracker.getInstance().getAndResetQps()));
+          String.format("memcache QPS %s<br>", ExecutionTracker.getInstance().getAndResetQps()));
       writer.write(
           String.format(
-              "memcache Errors %s", ExecutionTracker.getInstance().getAndResetErrorCount()));
+              "memcache Errors %s<br>", ExecutionTracker.getInstance().getAndResetErrorCount()));
     }
     for (Future future : futures) {
       try {
