@@ -14,6 +14,8 @@ final class RequestReader {
   private static final int DEFAULT_KEY_SPACE_SIZE = 1000;
   private static final int DEFAULT_ITERATION_COUNT = 1;
   private static final int DEFAULT_VALUE_SIZE = 1024;
+  private static final int DEFAULT_DURATION_SEC = 0;
+  private static final int DEFAULT_FRONTEND_QPS = 1;
 
   private static final double SIZE_TOLERANCE = 0.1;
 
@@ -56,6 +58,14 @@ final class RequestReader {
     return Range.closed(
         (int) ceil(valueSize * (1 - SIZE_TOLERANCE)),
         (int) floor(valueSize * (1 + SIZE_TOLERANCE)));
+  }
+
+  int readDurationSec() {
+    return readInt("duration_sec", DEFAULT_DURATION_SEC);
+  }
+
+  int readFrontendQps() {
+    return readInt("frontend_qps", DEFAULT_FRONTEND_QPS);
   }
 
   /** Generate a random key. * */
