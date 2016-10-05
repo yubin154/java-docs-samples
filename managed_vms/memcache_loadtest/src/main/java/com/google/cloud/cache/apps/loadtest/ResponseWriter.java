@@ -23,6 +23,10 @@ final class ResponseWriter {
     response.getWriter().printf("%s: %s\n", key, value);
   }
 
+  void flush() throws IOException {
+    response.getWriter().flush();
+  }
+
   void fail() {
     response.setStatus(507);
   }

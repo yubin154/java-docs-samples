@@ -72,11 +72,10 @@ public final class QpsLoadTestServlet extends HttpServlet {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
+      writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
       writer.write(
-          String.format("memcache QPS %s<br>", ExecutionTracker.getInstance().getAndResetQps()));
-      writer.write(
-          String.format(
-              "memcache Errors %s<br>", ExecutionTracker.getInstance().getAndResetErrorCount()));
+          String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
+      writer.flush();
     }
     for (Future future : futures) {
       try {
