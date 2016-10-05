@@ -73,7 +73,7 @@
     <servlet-name>setGetDelete</servlet-name>
     <url-pattern>/setgetdelete</url-pattern>
   </servlet-mapping>
-  </servlet-mapping>
+  <servlet-mapping>
     <servlet-name>qpsLoadTest</servlet-name>
     <url-pattern>/qpsloadtest</url-pattern>
   </servlet-mapping>
