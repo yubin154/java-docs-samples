@@ -5,10 +5,14 @@
   <vm>true</vm>
   <service>java-load-test</service>
   <resources>
-    <cpu>1</cpu>
-    <memory-gb>2</memory-gb>
+    <cpu>16</cpu>
+    <memory-gb>60</memory-gb>
     <disk-size-gb>10</disk-size-gb>
   </resources>
+  <automatic-scaling>
+    <min-num-instances>1</min-num-instances>
+    <max-num-instances>1</max-num-instances>
+  </automatic-scaling>
   <beta-settings>
     <setting name="source_reference" value="https://github.com/yubin154/java-docs-samples.git#03821c13c85cc319578407935f36920b03ea6c3e"/>
     <!--<setting name="enable_app_engine_apis" value="True"/>-->
