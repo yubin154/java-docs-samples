@@ -38,6 +38,12 @@
       com.google.cloud.cache.apps.loadtest.SetGetDeleteServlet
     </servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>qpsLoadTest</servlet-name>
+    <servlet-class>
+      com.google.cloud.cache.apps.loadtest.QpsLoadTestServlet
+    </servlet-class>
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>delete</servlet-name>
@@ -66,6 +72,10 @@
   </servlet-mapping>
     <servlet-name>setGetDelete</servlet-name>
     <url-pattern>/setgetdelete</url-pattern>
+  </servlet-mapping>
+  </servlet-mapping>
+    <servlet-name>qpsLoadTest</servlet-name>
+    <url-pattern>/qpsloadtest</url-pattern>
   </servlet-mapping>
 
 </web-app>
