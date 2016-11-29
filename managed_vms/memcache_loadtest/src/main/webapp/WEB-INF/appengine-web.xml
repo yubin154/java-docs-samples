@@ -2,12 +2,12 @@
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
   <version>2</version>
   <threadsafe>true</threadsafe>
-  <vm>true</vm>
+  <env>flex</env>
   <service>java-load-test</service>
   <resources>
-    <cpu>16</cpu>
-    <memory-gb>60</memory-gb>
-    <disk-size-gb>10</disk-size-gb>
+    <cpu>2</cpu>
+    <memory-gb>6</memory-gb>
+    <disk-size-gb>40</disk-size-gb>
   </resources>
   <automatic-scaling>
     <min-num-instances>1</min-num-instances>
@@ -15,6 +15,6 @@
   </automatic-scaling>
   <beta-settings>
     <setting name="source_reference" value="https://github.com/yubin154/java-docs-samples.git#03821c13c85cc319578407935f36920b03ea6c3e"/>
-    <!--<setting name="enable_app_engine_apis" value="True"/>-->
+    <setting name="enable_app_engine_apis" value="True"/>
   </beta-settings>
 </appengine-web-app>
