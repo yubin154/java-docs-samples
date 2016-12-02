@@ -53,7 +53,7 @@
   <servlet>
     <servlet-name>memcachedTest</servlet-name>
     <servlet-class>
-      com.google.cloud.cache.apps.loadtest.QpsLoadTestServlet
+      com.google.cloud.cache.apps.loadtest.MemcachedConformanceTestServlet
     </servlet-class>
   </servlet>
 
