@@ -44,13 +44,13 @@ abstract class SpyMemcachedBaseTest {
   }
 
   protected void expectTrue(boolean condition, String template, Object... values) {
-    result.append(isAscii ? "ascii " : "binary ");
-    result.append(String.format(template, values));
+    result.append(isAscii ? "ascii " : "binary ").append("\n");
+    result.append(String.format(template, values)).append("\n");
     if (!condition) {
       testPassed = false;
-      result.append("\t[FAIL]");
+      result.append("\t[FAIL]").append("\n");
     } else {
-      result.append("\t[pass]");
+      result.append("\t[pass]").append("\n");
     }
   }
 

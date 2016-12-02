@@ -22,10 +22,9 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
       throws IOException {
     RequestReader reader = RequestReader.create(request);
     final ResponseWriter writer = ResponseWriter.create(response);
-    final AsyncMemcacheService memcache = MemcacheServiceFactory.getAsyncMemcacheService();
     try {
       SpyMemcachedAsciiTestStandalone asciiTester =
-          new SpyMemcachedAsciiTestStandalone("169.254.10.1", 11211, "1.4.22");
+          new SpyMemcachedAsciiTestStandalone("169.254.10.1", 11211, "1.4.24");
       writer.write("Setup ASCII test");
       asciiTester.setUp();
       asciiTester.runAllTests();
@@ -33,6 +32,19 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
       writer.write(
           String.format("ASCII test %s", asciiTester.isTestPassed() ? "PASS" : "FAIL"));
       asciiTester.tearDown();
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+    try {
+      SpyMemcachedBinaryTestStandalone binaryTester =
+          new SpyMemcachedBinaryTestStandalone("169.254.10.1", 11211, "1.4.22");
+      writer.write("Setup Binary test");
+      binaryTester.setUp();
+      binaryTester.runAllTests();
+      writer.write(binaryTester.getResult());
+      writer.write(
+          String.format("ASCII test %s", binaryTester.isTestPassed() ? "PASS" : "FAIL"));
+      binaryTester.tearDown();
     } catch (Exception e) {
       throw new IOException(e);
     }
