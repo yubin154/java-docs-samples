@@ -94,8 +94,8 @@
     <url-pattern>/qpsloadtestsync</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>qpsLoadTest</servlet-name>
-    <url-pattern>/qpsloadtest</url-pattern>
+    <servlet-name>memcachedTest</servlet-name>
+    <url-pattern>/memcachedtest</url-pattern>
   </servlet-mapping>
 
 </web-app>
