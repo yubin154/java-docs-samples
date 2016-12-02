@@ -29,6 +29,7 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
       writer.write("Setup ASCII test");
       asciiTester.setUp();
       asciiTester.runAllTests();
+      writer.write(asciiTester.getResult());
       writer.write(
           String.format("ASCII test %s", asciiTester.isTestPassed() ? "PASS" : "FAIL"));
       asciiTester.tearDown();

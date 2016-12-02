@@ -21,6 +21,7 @@ abstract class SpyMemcachedBaseTest {
   protected InetSocketAddress serverAddress;
   protected String version;
   protected boolean isAscii;
+  protected StringBuffer result = new StringBuffer();
 
   protected MemcachedClient client;
 
@@ -43,13 +44,13 @@ abstract class SpyMemcachedBaseTest {
   }
 
   protected void expectTrue(boolean condition, String template, Object... values) {
-    System.out.print(isAscii ? "ascii " : "binary ");
-    System.out.print(String.format(template, values));
+    result.append(isAscii ? "ascii " : "binary ");
+    result.append(String.format(template, values));
     if (!condition) {
       testPassed = false;
-      System.out.println("\t[FAIL]");
+      result.append("\t[FAIL]");
     } else {
-      System.out.println("\t[pass]");
+      result.append("\t[pass]");
     }
   }
 
@@ -127,5 +128,9 @@ abstract class SpyMemcachedBaseTest {
     } catch (Throwable t) {
       t.printStackTrace();
     }
+  }
+
+  public String getResult() {
+    return result.toString();
   }
 }
