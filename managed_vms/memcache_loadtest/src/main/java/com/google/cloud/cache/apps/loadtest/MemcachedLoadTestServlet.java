@@ -30,7 +30,7 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
               "Setup load test iteration=%s, duration=%s, fe_qps=%s\n",
               iterationCount, durationSec, frontendQps));
       List<Future> futures = new ArrayList<>();
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 2; i++) {
         futures.add(
             ExecutionTracker.getInstance()
                 .getExecutorService()
@@ -43,7 +43,7 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
                               new MemcachedLoadTest("169.254.10.1", 11211, "1.4.22");
                           loadTester.setUp();
                           loadTester.runTest(
-                              valueSizeRange, iterationCount, durationSec, frontendQps / 10);
+                              valueSizeRange, iterationCount, durationSec, frontendQps / 2);
                           loadTester.tearDown();
                         } catch (Exception e) {
                           logger.severe(e.getMessage());
@@ -52,14 +52,17 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
                     }));
       }
       for (int i = 0; i <= durationSec; ++i) {
-        Thread.sleep(1000);
         writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
         writer.write(
             String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
+        Thread.sleep(1000);
       }
       for (Future future : futures) {
         future.get();
       }
+      writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
+      writer.write(
+          String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
     } catch (Exception e) {
       throw new IOException(e);
     }
