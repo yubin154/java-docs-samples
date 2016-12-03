@@ -62,21 +62,6 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
                       }
                     }));
       }
-      for (int i = 0; i <= durationSec; ++i) {
-        try {
-          Thread.sleep(1000);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-        result
-            .append(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()))
-            .append("\n");
-        result
-            .append(
-                String.format(
-                    "Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()))
-            .append("\n");
-      }
       for (Future future : futures) {
         future.get();
       }
