@@ -8,65 +8,59 @@ import java.util.concurrent.Future;
 
 final class MemcachedLoadTest extends SpyMemcachedBaseTest {
 
+  private boolean stop = false;
+
   MemcachedLoadTest(String server, int port, String version) {
     super(server, port, version, false);
   }
 
-  void runTest(
+  void stopTest() {
+    this.stop = true;
+  }
+
+  private boolean stopped() {
+    return stop;
+  }
+
+  void startTest(
       final Range<Integer> valueSizeRange,
       final int iterationCount,
       final int durationSec,
-      final int frontendQps)
+      final int numOfThreads)
       throws Exception {
-    if (!lease()) {
-      return;
-    }
-    try {
-      List<Future> futures = new ArrayList<>();
-      for (int i = 0; i < frontendQps; ++i) {
-        final String key = UUID.randomUUID().toString();
-        final Object value = MemcacheValues.random(valueSizeRange);
-        client.set(key, 0, value).get();
-        ExecutionTracker.getInstance().incrementQps();
-        futures.add(
-            ExecutionTracker.getInstance()
-                .getExecutorService()
-                .submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        int duration = durationSec;
-                        List<Future> opsFutures = new ArrayList<>();
-                        try {
-                          do {
-                            opsFutures.clear();
-                            long start = System.currentTimeMillis();
-                            for (int i = 0; i < iterationCount; ++i) {
-                              opsFutures.add(client.asyncGet(key));
-                              ExecutionTracker.getInstance().incrementQps();
-                            }
-                            for (Future future : opsFutures) {
-                              if (future.get() == null) {
-                                ExecutionTracker.getInstance().incrementErrorCount();
-                              }
-                            }
-                            if (duration > 0) {
-                              // sleep till 1 second
-                              Thread.sleep(
-                                  Math.max(1, 1000 - (System.currentTimeMillis() - start)));
-                            }
-                          } while (duration-- >= 0);
-                        } catch (Throwable t) {
-                          ExecutionTracker.getInstance().incrementErrorCount();
+    this.setUp();
+    List<Future> futures = new ArrayList<>();
+    for (int i = 0; i < numOfThreads; ++i) {
+      final String key = UUID.randomUUID().toString();
+      final Object value = MemcacheValues.random(valueSizeRange);
+      client.set(key, 0, value).get();
+      ExecutionTracker.getInstance().incrementQps();
+      futures.add(
+          ExecutionTracker.getInstance()
+              .getExecutorService()
+              .submit(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      int duration = durationSec;
+                      try {
+                        while (!stopped()) {
+                          long start = System.currentTimeMillis();
+                          if (client.get(key) != null) {
+                            ExecutionTracker.getInstance().incrementQps();
+                          } else {
+                            ExecutionTracker.getInstance().incrementErrorCount();
+                          }
                         }
+                      } catch (Throwable t) {
+                        ExecutionTracker.getInstance().incrementErrorCount();
                       }
-                    }));
-      }
-      for (Future future : futures) {
-        future.get();
-      }
-    } finally {
-      release();
+                    }
+                  }));
     }
+    for (Future future : futures) {
+      future.get();
+    }
+    this.tearDown();
   }
 }

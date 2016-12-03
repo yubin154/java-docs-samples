@@ -4,7 +4,6 @@ import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,41 +23,39 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       final int iterationCount = reader.readIterationCount();
       final int durationSec = reader.readDurationSec();
       final int frontendQps = reader.readFrontendQps();
+      int clientSize = reader.readClientSize();
 
       writer.write(
           String.format(
               "Setup load test iteration=%s, duration=%s, fe_qps=%s\n",
               iterationCount, durationSec, frontendQps));
-      List<Future> futures = new ArrayList<>();
-      for (int i = 0; i < 2; i++) {
-        futures.add(
-            ExecutionTracker.getInstance()
-                .getExecutorService()
-                .submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        try {
-                          MemcachedLoadTest loadTester =
-                              new MemcachedLoadTest("169.254.10.1", 11211, "1.4.22");
-                          loadTester.setUp();
-                          loadTester.runTest(
-                              valueSizeRange, iterationCount, durationSec, frontendQps / 2);
-                          loadTester.tearDown();
-                        } catch (Exception e) {
-                          logger.severe(e.getMessage());
-                        }
-                      }
-                    }));
+      List<MemcachedLoadTest> testers = new ArrayList<>();
+      for (int i = 0; i < clientSize; i++) {
+        new Thread(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    try {
+                      MemcachedLoadTest loadTester =
+                          new MemcachedLoadTest("169.254.10.1", 11211, "1.4.22");
+                      loadTester.startTest(
+                          valueSizeRange, iterationCount, durationSec, frontendQps);
+                    } catch (Exception e) {
+                      logger.severe(e.getMessage());
+                    }
+                  }
+                })
+            .start();
       }
-      for (int i = 0; i <= durationSec; ++i) {
+      for (int i = 0; i <= durationSec; i++) {
+        Thread.sleep(1000);
         writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
         writer.write(
             String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
-        Thread.sleep(1000);
       }
-      for (Future future : futures) {
-        future.get();
+      for (MemcachedLoadTest tester : testers) {
+        tester.stopTest();
+        Thread.sleep(1000);
       }
       writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
       writer.write(
