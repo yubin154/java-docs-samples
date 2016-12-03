@@ -26,7 +26,7 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
       for (int i = 0; i < frontendQps; ++i) {
         final String key = UUID.randomUUID().toString();
         final Object value = MemcacheValues.random(valueSizeRange);
-        futures.add(client.set(key, 0, value));
+        client.set(key, 0, value).get();
         ExecutionTracker.getInstance().incrementQps();
         futures.add(
             ExecutionTracker.getInstance()
@@ -36,16 +36,16 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
                       @Override
                       public void run() {
                         int duration = durationSec;
-                        List<Future> futures = new ArrayList<>();
+                        List<Future> opsFutures = new ArrayList<>();
                         try {
                           do {
-                            futures.clear();
+                            opsFutures.clear();
                             long start = System.currentTimeMillis();
                             for (int i = 0; i < iterationCount; ++i) {
-                              futures.add(client.asyncGet(key));
+                              opsFutures.add(client.asyncGet(key));
                               ExecutionTracker.getInstance().incrementQps();
                             }
-                            for (Future future : futures) {
+                            for (Future future : opsFutures) {
                               if (future.get() == null) {
                                 ExecutionTracker.getInstance().incrementErrorCount();
                               }
