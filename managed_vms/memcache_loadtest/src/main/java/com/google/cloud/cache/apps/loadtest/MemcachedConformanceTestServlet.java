@@ -24,7 +24,7 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
     final ResponseWriter writer = ResponseWriter.create(response);
     try {
       SpyMemcachedAsciiTestStandalone asciiTester =
-          new SpyMemcachedAsciiTestStandalone("169.254.10.1", 11211, "1.4.24");
+          new SpyMemcachedAsciiTestStandalone("169.254.10.1", 11211, "1.4.22");
       writer.write("Setup ASCII test");
       asciiTester.setUp();
       asciiTester.runAllTests();
@@ -43,7 +43,7 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
       binaryTester.runAllTests();
       writer.write(binaryTester.getResult());
       writer.write(
-          String.format("ASCII test %s", binaryTester.isTestPassed() ? "PASS" : "FAIL"));
+          String.format("Binary test %s", binaryTester.isTestPassed() ? "PASS" : "FAIL"));
       binaryTester.tearDown();
     } catch (Exception e) {
       throw new IOException(e);
