@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /** Run 'times' of memcache Get requests + 1 Set request, use synchronous memcache service */
 public final class QpsLoadTestSyncServlet extends HttpServlet {
-  private static final Logger logger = Logger.getLogger(GetServlet.class.getName());
+  private static final Logger logger = Logger.getLogger(QpsLoadTestSyncServlet.class.getName());
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)

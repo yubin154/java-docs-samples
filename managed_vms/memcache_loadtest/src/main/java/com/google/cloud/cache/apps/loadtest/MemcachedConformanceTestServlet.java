@@ -1,13 +1,6 @@
 package com.google.cloud.cache.apps.loadtest;
 
-import com.google.appengine.api.memcache.AsyncMemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.common.collect.Range;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /** Run 'times' of memcache Get requests + 1 Set request. */
 public final class MemcachedConformanceTestServlet extends HttpServlet {
-  private static final Logger logger = Logger.getLogger(GetServlet.class.getName());
+  private static final Logger logger = Logger.getLogger(MemcachedConformanceTestServlet.class.getName());
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)

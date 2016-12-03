@@ -56,6 +56,12 @@
       com.google.cloud.cache.apps.loadtest.MemcachedConformanceTestServlet
     </servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>memcachedLoadTest</servlet-name>
+    <servlet-class>
+      com.google.cloud.cache.apps.loadtest.MemcachedLoadTestServlet
+    </servlet-class>
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>delete</servlet-name>
@@ -96,6 +102,10 @@
   <servlet-mapping>
     <servlet-name>memcachedTest</servlet-name>
     <url-pattern>/memcachedtest</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>memcachedLoadTest</servlet-name>
+    <url-pattern>/memcachedloadtest</url-pattern>
   </servlet-mapping>
 
 </web-app>
