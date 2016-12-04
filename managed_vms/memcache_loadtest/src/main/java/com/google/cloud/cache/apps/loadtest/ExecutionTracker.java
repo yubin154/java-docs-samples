@@ -41,4 +41,8 @@ public class ExecutionTracker {
     return me;
   }
 
+  public static final ExecutionTracker newInstance() {
+    return new ExecutionTracker();
+  }
+
 }

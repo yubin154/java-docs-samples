@@ -27,8 +27,10 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
 
       writer.write(
           String.format(
-              "Setup load test iteration=%s, duration=%s, fe_qps=%s\n",
-              iterationCount, durationSec, frontendQps));
+              "Setup load test num_of_client=%s, duration=%s, fe_qps=%s\n",
+              clientSize, durationSec, frontendQps));
+      final ExecutionTracker qpsTracker = ExecutionTracker.newInstance();
+      final LatencyTracker latencyTracker = LatencyTracker.newInstance();
       List<MemcachedLoadTest> testers = new ArrayList<>();
       for (int i = 0; i < clientSize; i++) {
         new Thread(
@@ -37,9 +39,9 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
                   public void run() {
                     try {
                       MemcachedLoadTest loadTester =
-                          new MemcachedLoadTest("169.254.10.1", 11211, "1.4.22");
-                      loadTester.startTest(
-                          valueSizeRange, iterationCount, durationSec, frontendQps);
+                          new MemcachedLoadTest(
+                              "169.254.10.1", 11211, "1.4.22", qpsTracker, latencyTracker);
+                      loadTester.startTest(valueSizeRange, frontendQps);
                     } catch (Exception e) {
                       logger.severe(e.getMessage());
                     }
@@ -49,18 +51,14 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       }
       for (int i = 0; i <= durationSec; i++) {
         Thread.sleep(1000);
-        writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
-        writer.write(
-            String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
+        writer.write(String.format("QPS %s\n", qpsTracker.getAndResetQps()));
+        writer.write(String.format("Errors %s\n", qpsTracker.getAndResetErrorCount()));
       }
       for (MemcachedLoadTest tester : testers) {
         tester.stopTest();
-        Thread.sleep(1000);
       }
-      writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
-      writer.write(
-          String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
-      writer.write(LatencyTracker.getInstance().report());
+      Thread.sleep(1000);
+      writer.write(latencyTracker.report());
       writer.write("\n");
     } catch (Exception e) {
       throw new IOException(e);

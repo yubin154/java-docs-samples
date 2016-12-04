@@ -6,6 +6,9 @@ import java.io.PrintStream;
 import org.HdrHistogram.Histogram;
 import org.LatencyUtils.LatencyStats;
 
+/**
+ * Track latency distrituion
+ */
 public final class LatencyTracker {
 
   private static final LatencyTracker me = new LatencyTracker();
@@ -16,6 +19,10 @@ public final class LatencyTracker {
 
   public static LatencyTracker getInstance() {
     return me;
+  }
+
+  public static LatencyTracker newInstance() {
+    return new LatencyTracker();
   }
 
   void recordLatency(long nanoTime) {
@@ -29,5 +36,9 @@ public final class LatencyTracker {
     PrintStream ps = new PrintStream(os);
     intervalHistogram.outputPercentileDistribution(ps, 1000000.0);
     return new String(os.toByteArray(), "UTF-8");
+  }
+
+  synchronized void reset() {
+    myOpStats = new LatencyStats();
   }
 }

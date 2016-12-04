@@ -8,33 +8,37 @@ import java.util.concurrent.Future;
 
 final class MemcachedLoadTest extends SpyMemcachedBaseTest {
 
-  private boolean stop = false;
+  private volatile boolean stop = false;
+  private ExecutionTracker qpsTracker;
+  private LatencyTracker latencyTracker;
 
-  MemcachedLoadTest(String server, int port, String version) {
+  MemcachedLoadTest(
+      String server,
+      int port,
+      String version,
+      ExecutionTracker qpsTracker,
+      LatencyTracker latencyTracker) {
     super(server, port, version, false);
+    this.qpsTracker = qpsTracker;
+    this.latencyTracker = latencyTracker;
   }
 
   void stopTest() {
     this.stop = true;
   }
 
-  private boolean stopped() {
+  private boolean testStopped() {
     return stop;
   }
 
-  void startTest(
-      final Range<Integer> valueSizeRange,
-      final int iterationCount,
-      final int durationSec,
-      final int numOfThreads)
-      throws Exception {
+  void startTest(final Range<Integer> valueSizeRange, final int numOfThreads) throws Exception {
     this.setUp();
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
       final String key = UUID.randomUUID().toString();
       final Object value = MemcacheValues.random(valueSizeRange);
       client.set(key, 0, value).get();
-      ExecutionTracker.getInstance().incrementQps();
+      qpsTracker.incrementQps();
       futures.add(
           ExecutionTracker.getInstance()
               .getExecutorService()
@@ -42,19 +46,19 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
                   new Runnable() {
                     @Override
                     public void run() {
-                      int duration = durationSec;
                       try {
-                        while (!stopped()) {
+                        while (!testStopped()) {
                           long start = System.nanoTime();
-                          if (client.get(key) != null) {
-                            ExecutionTracker.getInstance().incrementQps();
+                          Object obj = client.get(key);
+                          latencyTracker.recordLatency(System.nanoTime() - start);
+                          if (obj != null) {
+                            qpsTracker.incrementQps();
                           } else {
-                            ExecutionTracker.getInstance().incrementErrorCount();
+                            qpsTracker.incrementErrorCount();
                           }
-                          LatencyTracker.getInstance().recordLatency(System.nanoTime() - start);
                         }
                       } catch (Throwable t) {
-                        ExecutionTracker.getInstance().incrementErrorCount();
+                        qpsTracker.incrementErrorCount();
                       }
                     }
                   }));
