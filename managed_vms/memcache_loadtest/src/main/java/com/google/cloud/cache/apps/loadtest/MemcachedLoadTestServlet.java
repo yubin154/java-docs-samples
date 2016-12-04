@@ -60,6 +60,8 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
       writer.write(
           String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
+      writer.write(LatencyTracker.getInstance().report());
+      writer.write("\n");
     } catch (Exception e) {
       throw new IOException(e);
     }

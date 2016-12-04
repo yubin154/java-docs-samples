@@ -45,12 +45,13 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
                       int duration = durationSec;
                       try {
                         while (!stopped()) {
-                          long start = System.currentTimeMillis();
+                          long start = System.nanoTime();
                           if (client.get(key) != null) {
                             ExecutionTracker.getInstance().incrementQps();
                           } else {
                             ExecutionTracker.getInstance().incrementErrorCount();
                           }
+                          LatencyTracker.getInstance().recordLatency(System.nanoTime() - start);
                         }
                       } catch (Throwable t) {
                         ExecutionTracker.getInstance().incrementErrorCount();
