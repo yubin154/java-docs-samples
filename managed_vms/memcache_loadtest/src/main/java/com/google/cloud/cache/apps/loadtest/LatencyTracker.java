@@ -34,7 +34,7 @@ public final class LatencyTracker {
     Histogram intervalHistogram = myOpStats.getIntervalHistogram();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(os);
-    intervalHistogram.outputPercentileDistribution(ps, 1000000.0);
+    intervalHistogram.outputPercentileDistribution(ps, 1000.0);
     return new String(os.toByteArray(), "UTF-8");
   }
 
