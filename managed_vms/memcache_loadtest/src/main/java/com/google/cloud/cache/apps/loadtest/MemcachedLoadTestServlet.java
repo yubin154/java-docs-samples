@@ -33,14 +33,14 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       final LatencyTracker latencyTracker = LatencyTracker.newInstance();
       List<MemcachedLoadTest> testers = new ArrayList<>();
       for (int i = 0; i < clientSize; i++) {
+        final MemcachedLoadTest loadTester =
+            new MemcachedLoadTest("169.254.10.1", 11211, "1.4.22", qpsTracker, latencyTracker);
+        testers.add(loadTester);
         new Thread(
                 new Runnable() {
                   @Override
                   public void run() {
                     try {
-                      MemcachedLoadTest loadTester =
-                          new MemcachedLoadTest(
-                              "169.254.10.1", 11211, "1.4.22", qpsTracker, latencyTracker);
                       loadTester.startTest(valueSizeRange, frontendQps);
                     } catch (Exception e) {
                       logger.severe(e.getMessage());
