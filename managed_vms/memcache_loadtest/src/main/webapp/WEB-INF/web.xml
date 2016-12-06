@@ -51,9 +51,15 @@
     </servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>memcachedTest</servlet-name>
+    <servlet-name>memcachedAsciiTest</servlet-name>
     <servlet-class>
-      com.google.cloud.cache.apps.loadtest.MemcachedConformanceTestServlet
+      com.google.cloud.cache.apps.loadtest.MemcachedAsciiConformanceTestServlet
+    </servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>memcachedBinaryTest</servlet-name>
+    <servlet-class>
+      com.google.cloud.cache.apps.loadtest.MemcachedBinaryConformanceTestServlet
     </servlet-class>
   </servlet>
   <servlet>
@@ -100,8 +106,12 @@
     <url-pattern>/qpsloadtestsync</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>memcachedTest</servlet-name>
-    <url-pattern>/memcachedtest</url-pattern>
+    <servlet-name>memcachedAsciiTest</servlet-name>
+    <url-pattern>/memcachedasciitest</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>memcachedBinaryTest</servlet-name>
+    <url-pattern>/memcachedbinarytest</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>memcachedLoadTest</servlet-name>

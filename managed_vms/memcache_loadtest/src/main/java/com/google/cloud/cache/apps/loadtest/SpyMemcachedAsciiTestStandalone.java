@@ -15,6 +15,8 @@ final class SpyMemcachedAsciiTestStandalone extends SpyMemcachedBaseTest {
       return;
     }
     try {
+      // flush to begin
+      testFlush();
       testAdd();
       testAppend();
       testBulkGet();
@@ -25,7 +27,6 @@ final class SpyMemcachedAsciiTestStandalone extends SpyMemcachedBaseTest {
       testIncr();
       testDecr();
       testDelete();
-      testFlush();
       if (!lease()) {
         return;
       }
