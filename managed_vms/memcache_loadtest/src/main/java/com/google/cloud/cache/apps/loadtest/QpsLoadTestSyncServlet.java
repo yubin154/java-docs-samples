@@ -29,6 +29,7 @@ public final class QpsLoadTestSyncServlet extends HttpServlet {
     final int durationSec = reader.readDurationSec();
     int frontendQps = reader.readFrontendQps();
     List<Future> futures = new ArrayList<>();
+    final LatencyTracker latencyTracker = LatencyTracker.newInstance();
     for (int i = 0; i < frontendQps; ++i) {
       final String key = UUID.randomUUID().toString();
       final Object value = MemcacheValues.random(valueSizeRange);
@@ -41,32 +42,30 @@ public final class QpsLoadTestSyncServlet extends HttpServlet {
                   new Runnable() {
                     @Override
                     public void run() {
-                      int duration = durationSec;
+                      long durationMs = durationSec * 1000L;
+                      long startMs = System.currentTimeMillis();
                       try {
                         do {
-                          long start = System.currentTimeMillis();
-                          for (int i = 0; i < iterationCount; ++i) {
-                            if (memcache.get(key) == null) {
-                              ExecutionTracker.getInstance().incrementErrorCount();
-                            }
+                          long start = System.nanoTime();
+                          Object obj = memcache.get(key);
+                          latencyTracker.recordLatency(System.nanoTime() - start);
+                          if (obj == null) {
+                            ExecutionTracker.getInstance().incrementErrorCount();
+                          } else {
                             ExecutionTracker.getInstance().incrementQps();
                           }
-                          if (duration > 0) {
-                            // sleep till 1 second
-                            Thread.sleep(Math.max(1, 1000 - (System.currentTimeMillis() - start)));
-                          }
-                        } while (duration-- >= 0);
+                        } while ((System.currentTimeMillis() - startMs) < durationMs);
                       } catch (Throwable t) {
                         ExecutionTracker.getInstance().incrementErrorCount();
                       }
                     }
                   }));
     }
-    for (int i = 0; i <= durationSec; ++i) {
+    for (int i = 0; i <= durationSec; i++) {
       try {
         Thread.sleep(1000);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        writer.write(e.getMessage());
       }
       writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
       writer.write(
@@ -80,6 +79,8 @@ public final class QpsLoadTestSyncServlet extends HttpServlet {
         writer.write(e.getMessage());
       }
     }
+    writer.write(latencyTracker.report());
+    writer.write("\n");
     writer.write("done");
   }
 }
