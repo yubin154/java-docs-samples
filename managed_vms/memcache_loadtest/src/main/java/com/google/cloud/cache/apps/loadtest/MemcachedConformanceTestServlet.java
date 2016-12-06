@@ -18,12 +18,12 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
     try {
       SpyMemcachedAsciiTestStandalone asciiTester =
           new SpyMemcachedAsciiTestStandalone("169.254.10.1", 11211, "1.4.22");
-      writer.write("Setup ASCII test");
+      writer.write("Setup ASCII test\n");
       asciiTester.setUp();
       asciiTester.runAllTests();
       writer.write(asciiTester.getResult());
       writer.write(
-          String.format("ASCII test %s", asciiTester.isTestPassed() ? "PASS" : "FAIL"));
+          String.format("ASCII test %s\n", asciiTester.isTestPassed() ? "PASS" : "FAIL"));
       asciiTester.tearDown();
     } catch (Exception e) {
       throw new IOException(e);
@@ -31,17 +31,17 @@ public final class MemcachedConformanceTestServlet extends HttpServlet {
     try {
       SpyMemcachedBinaryTestStandalone binaryTester =
           new SpyMemcachedBinaryTestStandalone("169.254.10.1", 11211, "1.4.22");
-      writer.write("Setup Binary test");
+      writer.write("Setup Binary test\n");
       binaryTester.setUp();
       binaryTester.runAllTests();
       writer.write(binaryTester.getResult());
       writer.write(
-          String.format("Binary test %s", binaryTester.isTestPassed() ? "PASS" : "FAIL"));
+          String.format("Binary test %s\n", binaryTester.isTestPassed() ? "PASS" : "FAIL"));
       binaryTester.tearDown();
     } catch (Exception e) {
       throw new IOException(e);
     }
-    writer.write("done");
+    writer.write("done\n");
     writer.flush();
   }
 }
