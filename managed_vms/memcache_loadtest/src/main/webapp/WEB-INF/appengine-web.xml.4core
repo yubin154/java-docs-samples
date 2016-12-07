@@ -3,10 +3,10 @@
   <version>2</version>
   <threadsafe>true</threadsafe>
   <env>flex</env>
-  <service>java-loadtest-2core</service>
+  <service>java-loadtest-4core</service>
   <resources>
-    <cpu>2</cpu>
-    <memory-gb>6</memory-gb>
+    <cpu>4</cpu>
+    <memory-gb>12</memory-gb>
     <disk-size-gb>40</disk-size-gb>
   </resources>
   <automatic-scaling>
